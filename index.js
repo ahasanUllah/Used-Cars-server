@@ -20,6 +20,8 @@ const client = new MongoClient(uri, {
 const run = async () => {
    try {
       const carCollection = client.db('usedcars').collection('cars');
+      const userCollection = client.db('usedcars').collection('user');
+      const bookingCollection = client.db('usedcars').collection('booking');
       const categoryCollection = client.db('usedcars').collection('category');
 
       app.get('/cars', async (req, res) => {
@@ -30,8 +32,6 @@ const run = async () => {
 
       app.get('/cars/:email', async (req, res) => {
          const email = req.params.email;
-         console.log(email);
-
          const query = { sellerEmail: email };
          const result = await carCollection.find(query).toArray();
          res.send(result);
@@ -45,7 +45,6 @@ const run = async () => {
 
       app.delete('/cars/:id', async (req, res) => {
          const id = req.params.id;
-         console.log(id);
 
          const query = { _id: ObjectId(id) };
          const result = await carCollection.deleteOne(query);
@@ -70,6 +69,19 @@ const run = async () => {
          const id = req.params.id;
          const query = { _id: ObjectId(id) };
          const result = await categoryCollection.findOne(query);
+         res.send(result);
+      });
+
+      app.post('/bookings', async (req, res) => {
+         const booking = req.body;
+         const result = await bookingCollection.insertOne(booking);
+         res.send(result);
+      });
+
+      app.get('/bookings/:email', async (req, res) => {
+         const email = req.params.email;
+         const query = { email: email };
+         const result = await bookingCollection.find(query).toArray();
          res.send(result);
       });
    } finally {
