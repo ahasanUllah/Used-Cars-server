@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+var jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId, ObjectID } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
@@ -24,8 +25,32 @@ const run = async () => {
       const bookingCollection = client.db('usedcars').collection('booking');
       const categoryCollection = client.db('usedcars').collection('category');
 
+      app.get('/jwt', async (req, res) => {
+         const email = req.query.email;
+         const query = { email: email };
+         const user = await userCollection.findOne(query);
+         if (user) {
+            const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' });
+            return res.send({ accessToken: token });
+         }
+         console.log(user);
+         res.status(403).send({ accessToken: 'token' });
+      });
+
       app.post('/users', async (req, res) => {
          const user = req.body;
+         const result = await userCollection.insertOne(user);
+         res.send(result);
+      });
+
+      app.post('/users/:email', async (req, res) => {
+         const email = req.params.email;
+         const user = req.body;
+         const query = { email: email };
+         const alreadyExist = await userCollection.findOne(query);
+         if (alreadyExist) {
+            return res.status(403).send({ message: 'already exist' });
+         }
          const result = await userCollection.insertOne(user);
          res.send(result);
       });
