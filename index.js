@@ -12,6 +12,24 @@ app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DETABASE_USER}:${process.env.DETABASE_PASSWORD}@cluster0.2redmm4.mongodb.net/?retryWrites=true&w=majority`;
 
+const verifyToken = (req, res, next) => {
+   const authorization = req.headers.authorization;
+
+   if (!authorization) {
+      return res.status(401).send({ message: 'unauthorized access cannot get accesstoken' });
+   }
+   const token = authorization.split(' ')[1];
+   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+      if (err) {
+         return res.status(401).send({ message: 'forbidden access' });
+      }
+
+      req.decoded = decoded;
+
+      next();
+   });
+};
+
 const client = new MongoClient(uri, {
    useNewUrlParser: true,
    useUnifiedTopology: true,
@@ -62,7 +80,18 @@ const run = async () => {
          res.send(result);
       });
 
-      app.delete('/users/:id', async (req, res) => {
+      app.delete('/users/:id', verifyToken, async (req, res) => {
+         const email = req.query.email;
+         const decodedEmail = req.decoded.email;
+         if (email !== decodedEmail) {
+            return res.status(403).send({ message: 'Forbidden access' });
+         }
+         const filter = { email: decodedEmail };
+         const user = await userCollection.findOne(filter);
+         if (user.role !== 'admin') {
+            return res.status(403).send({ message: 'Forbidden access' });
+         }
+
          const id = req.params.id;
          const query = { _id: ObjectId(id) };
          const result = await userCollection.deleteOne(query);
@@ -75,14 +104,23 @@ const run = async () => {
          res.send(result);
       });
 
-      app.get('/cars/:email', async (req, res) => {
+      app.get('/cars/:email', verifyToken, async (req, res) => {
+         const decodedEmail = req.decoded.email;
          const email = req.params.email;
+         if (email !== decodedEmail) {
+            return res.status(403).send({ message: 'Forbidden access' });
+         }
          const query = { sellerEmail: email };
          const result = await carCollection.find(query).toArray();
          res.send(result);
       });
 
-      app.post('/cars', async (req, res) => {
+      app.post('/cars', verifyToken, async (req, res) => {
+         const email = req.query.email;
+         const decodedEmail = req.decoded.email;
+         if (email !== decodedEmail) {
+            res.status(403).send({ message: 'Forbidden access' });
+         }
          const car = req.body;
          const result = await carCollection.insertOne(car);
          res.send(result);
