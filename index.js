@@ -99,10 +99,16 @@ const run = async () => {
       });
 
       app.get('/users/admin/:email', async (req, res) => {
-         const email = req.query.email;
+         const email = req.params.email;
          const query = { email: email };
          const user = await userCollection.findOne(query);
          res.send({ isAdmin: user?.role === 'admin' });
+      });
+      app.get('/users/seller/:email', async (req, res) => {
+         const email = req.params.email;
+         const query = { email: email };
+         const user = await userCollection.findOne(query);
+         res.send({ isSeller: user?.role === 'seller' });
       });
 
       app.get('/cars', async (req, res) => {
@@ -127,6 +133,11 @@ const run = async () => {
          const decodedEmail = req.decoded.email;
          if (email !== decodedEmail) {
             res.status(403).send({ message: 'Forbidden access' });
+         }
+         const query = { email: decodedEmail };
+         const user = await userCollection.findOne(query);
+         if (user.role !== 'seller') {
+            return res.status(403).send({ message: 'Forbidden Access Only seller can add product' });
          }
          const car = req.body;
          const result = await carCollection.insertOne(car);
