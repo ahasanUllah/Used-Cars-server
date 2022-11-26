@@ -98,6 +98,13 @@ const run = async () => {
          res.send(result);
       });
 
+      app.get('/users/admin/:email', async (req, res) => {
+         const email = req.query.email;
+         const query = { email: email };
+         const user = await userCollection.findOne(query);
+         res.send({ isAdmin: user?.role === 'admin' });
+      });
+
       app.get('/cars', async (req, res) => {
          const query = {};
          const result = await carCollection.find(query).toArray();
