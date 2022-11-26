@@ -144,9 +144,18 @@ const run = async () => {
          res.send(result);
       });
 
-      app.delete('/cars/:id', async (req, res) => {
+      app.delete('/cars/:id', verifyToken, async (req, res) => {
+         const decodedEmail = req.decoded.email;
+         const email = req.query.email;
+         if (email !== decodedEmail) {
+            res.status(403).send({ message: 'Forbidden Access' });
+         }
+         const filter = { email: decodedEmail };
+         const user = await userCollection.findOne(filter);
+         if (user.role !== 'seller') {
+            return res.status(403).send({ message: 'Forbidden Access' });
+         }
          const id = req.params.id;
-
          const query = { _id: ObjectId(id) };
          const result = await carCollection.deleteOne(query);
          res.send(result);
@@ -179,8 +188,17 @@ const run = async () => {
          res.send(result);
       });
 
-      app.get('/bookings/:email', async (req, res) => {
+      app.get('/bookings/:email', verifyToken, async (req, res) => {
+         const decodedEmail = req.decoded.email;
          const email = req.params.email;
+         if (decodedEmail !== email) {
+            return res.status(403).send({ message: 'Forbidden Access' });
+         }
+         const filter = { email: decodedEmail };
+         const user = await userCollection.findOne(filter);
+         if (user.role !== 'buyer') {
+            return res.status(403).send({ message: 'Forbidden access' });
+         }
          const query = { email: email };
          const result = await bookingCollection.find(query).toArray();
          res.send(result);
