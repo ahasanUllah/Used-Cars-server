@@ -20,9 +20,29 @@ const client = new MongoClient(uri, {
 const run = async () => {
    try {
       const carCollection = client.db('usedcars').collection('cars');
-      const userCollection = client.db('usedcars').collection('user');
+      const userCollection = client.db('usedcars').collection('users');
       const bookingCollection = client.db('usedcars').collection('booking');
       const categoryCollection = client.db('usedcars').collection('category');
+
+      app.post('/users', async (req, res) => {
+         const user = req.body;
+         const result = await userCollection.insertOne(user);
+         res.send(result);
+      });
+
+      app.get('/users/:role', async (req, res) => {
+         const role = req.params.role;
+         const query = { role: role };
+         const result = await userCollection.find(query).toArray();
+         res.send(result);
+      });
+
+      app.delete('/users/:id', async (req, res) => {
+         const id = req.params.id;
+         const query = { _id: ObjectId(id) };
+         const result = await userCollection.deleteOne(query);
+         res.send(result);
+      });
 
       app.get('/cars', async (req, res) => {
          const query = {};
