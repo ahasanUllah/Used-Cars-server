@@ -76,7 +76,8 @@ const run = async () => {
          const payment = req.body;
          const result = await paymentsCollection.insertOne(payment);
          const id = payment.carId;
-
+         const bookingId = payment.bookingId;
+         const query = { _id: ObjectId(bookingId) };
          const filter = { _id: ObjectId(id) };
          const updatedDoc = {
             $set: {
@@ -85,7 +86,7 @@ const run = async () => {
             },
          };
          const option = { upsert: true };
-
+         const updateBooking = await bookingCollection.updateOne(query, updatedDoc, option);
          const updateCars = await carCollection.updateOne(filter, updatedDoc, option);
          res.send(result);
       });
@@ -158,11 +159,30 @@ const run = async () => {
          res.send(result);
       });
 
-      // app.delete('/bookings', async (req, res) => {
-      //    const query = {};
-      //    const result = await bookingCollection.deleteMany(query);
-      //    res.send(result);
-      // });
+      app.get('/cars/advertised', async (req, res) => {
+         const query = { advertised: 'true', status: 'available' };
+         const result = await carCollection.find(query).toArray();
+         res.send(result);
+      });
+
+      app.put('/cars/:id', async (req, res) => {
+         const id = req.params.id;
+         const query = { _id: ObjectId(id) };
+         const option = { upsert: true };
+         const updatedDoc = {
+            $set: {
+               advertised: 'true',
+            },
+         };
+         const result = await carCollection.updateOne(query, updatedDoc, option);
+         res.send(result);
+      });
+
+      app.delete('/cars', async (req, res) => {
+         const query = {};
+         const result = await carCollection.deleteMany(query);
+         res.send(result);
+      });
 
       app.get('/cars/:email', verifyToken, async (req, res) => {
          const decodedEmail = req.decoded.email;
