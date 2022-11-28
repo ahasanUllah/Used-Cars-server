@@ -232,7 +232,7 @@ const run = async () => {
          const id = req.params.id;
          console.log(id);
 
-         const query = { categoryid: id };
+         const query = { categoryid: id, status: 'available' };
          const result = await carCollection.find(query).toArray();
          res.send(result);
       });
