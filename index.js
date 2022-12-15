@@ -158,6 +158,11 @@ const run = async () => {
          const result = await carCollection.find(query).toArray();
          res.send(result);
       });
+      app.get('/availableCars', async (req, res) => {
+         const query = { status: 'available' };
+         const result = await carCollection.find(query).toArray();
+         res.send(result);
+      });
 
       app.get('/cars/advertised', async (req, res) => {
          const query = { advertised: 'true', status: 'available' };
