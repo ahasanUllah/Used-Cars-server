@@ -45,6 +45,7 @@ const run = async () => {
       const userCollection = client.db('usedcars').collection('users');
       const bookingCollection = client.db('usedcars').collection('booking');
       const categoryCollection = client.db('usedcars').collection('category');
+      const brandCollection = client.db('usedcars').collection('brands');
 
       app.get('/jwt', async (req, res) => {
          const email = req.query.email;
@@ -56,6 +57,18 @@ const run = async () => {
          }
          console.log(user);
          res.status(403).send({ accessToken: 'token' });
+      });
+
+      app.get('/brands', async (req, res) => {
+         const query = {};
+         const result = await brandCollection.find(query).toArray();
+         res.send(result);
+      });
+      app.get('/feature-brands', async (req, res) => {
+         const query = {};
+         const result = await brandCollection.find(query).toArray();
+         const feature = result.filter((brand) => ['BMW', 'Audi', 'Ford', 'Mercedes-Benz'].includes(brand.name));
+         res.send(feature);
       });
 
       app.post('/create-payment-intent', async (req, res) => {
