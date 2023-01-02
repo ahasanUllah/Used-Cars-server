@@ -71,6 +71,13 @@ const run = async () => {
          res.send(feature);
       });
 
+      app.get('/brand/:name', async (req, res) => {
+         const name = req.params.name;
+         const query = { brandName: name };
+         const result = await carCollection.find(query).toArray();
+         res.send(result);
+      });
+
       app.post('/create-payment-intent', async (req, res) => {
          const booking = req.body;
          const price = booking.price;
