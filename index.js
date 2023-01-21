@@ -59,6 +59,34 @@ const run = async () => {
          res.status(403).send({ accessToken: 'token' });
       });
 
+      app.get('/search', async (req, res) => {
+         const type = req.query.type;
+         const make = req.query.make;
+         const from = req.query.from;
+         const to = req.query.to;
+         if (type && make && from && to) {
+            const query = { categoryid: type, brandName: make, purchaseYear: { $gte: from, $lte: to } };
+            const result = await carCollection.find(query).toArray();
+            res.send(result);
+         } else if (type && make) {
+            const query = { categoryid: type, brandName: make };
+            const result = await carCollection.find(query).toArray();
+            res.send(result);
+         } else if (type && from && to) {
+            const query = { categoryid: type, purchaseYear: { $gte: from, $lte: to } };
+            const result = await carCollection.find(query).toArray();
+            res.send(result);
+         } else if (make && from && to) {
+            const query = { brandName: make, purchaseYear: { $gte: from, $lte: to } };
+            const result = await carCollection.find(query).toArray();
+            res.send(result);
+         } else {
+            const query = {};
+            const result = await carCollection.find(query).toArray();
+            res.send(result);
+         }
+      });
+
       app.get('/brands', async (req, res) => {
          const query = {};
          const result = await brandCollection.find(query).toArray();
