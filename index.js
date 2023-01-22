@@ -64,24 +64,29 @@ const run = async () => {
          const make = req.query.make;
          const from = req.query.from;
          const to = req.query.to;
+         console.log(type, make, from, to);
          if (type && make && from && to) {
             const query = { categoryid: type, brandName: make, purchaseYear: { $gte: from, $lte: to } };
             const result = await carCollection.find(query).toArray();
-            res.send(result);
-         } else if (type && make) {
+            return res.send(result);
+         }
+         if (type && make) {
             const query = { categoryid: type, brandName: make };
             const result = await carCollection.find(query).toArray();
             res.send(result);
-         } else if (type && from && to) {
+         }
+         if (type && from && to) {
             const query = { categoryid: type, purchaseYear: { $gte: from, $lte: to } };
             const result = await carCollection.find(query).toArray();
             res.send(result);
-         } else if (make && from && to) {
+         }
+         if (make && from && to) {
             const query = { brandName: make, purchaseYear: { $gte: from, $lte: to } };
             const result = await carCollection.find(query).toArray();
             res.send(result);
-         } else {
-            const query = {};
+         }
+         if (type) {
+            const query = { categoryid: type };
             const result = await carCollection.find(query).toArray();
             res.send(result);
          }
