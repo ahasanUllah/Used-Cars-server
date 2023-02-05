@@ -213,13 +213,13 @@ const run = async () => {
       });
       app.get('/availableCars', async (req, res) => {
          const query = { status: 'available' };
-         const result = await carCollection.find(query).toArray();
+         const result = await carCollection.find(query).limit(8).toArray();
          res.send(result);
       });
 
       app.get('/cars/advertised', async (req, res) => {
          const query = { advertised: 'true', status: 'available' };
-         const result = await carCollection.find(query).limit(3).sort({ $natural: -1 }).toArray();
+         const result = await carCollection.find(query).limit(4).sort({ $natural: -1 }).toArray();
          res.send(result);
       });
 
